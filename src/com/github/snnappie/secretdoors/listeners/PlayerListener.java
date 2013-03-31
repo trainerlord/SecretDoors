@@ -1,5 +1,6 @@
-package com.github.snnappie.secretdoors;
+package com.github.snnappie.secretdoors.listeners;
 
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -8,16 +9,20 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class SecretDoorsPlayerListener implements Listener {
+import com.github.snnappie.secretdoors.SecretDoor;
+import com.github.snnappie.secretdoors.SecretDoors;
+import com.github.snnappie.secretdoors.SecretTrapdoor;
+
+public class PlayerListener implements Listener {
 	private SecretDoors plugin = null;
 
 
-	public SecretDoorsPlayerListener(SecretDoors plugin) {
+	public PlayerListener(SecretDoors plugin) {
 		this.plugin = plugin;
 	}
 
 	@EventHandler
-	public void onPlayerInteract(PlayerInteractEvent pie) {
+	public void onDoorClick(PlayerInteractEvent pie) {
 		if (Action.RIGHT_CLICK_BLOCK.equals(pie.getAction()) && (SecretDoor.isAttachableItem(pie.getClickedBlock().getType()) || SecretDoor.isValidBlock(pie.getClickedBlock()))) {
 			
 			// exit if the user clicked on the top or bottom block of a door/secret door block
@@ -68,6 +73,42 @@ public class SecretDoorsPlayerListener implements Listener {
 			if (door != null) {
 				this.plugin.addDoor(door).open();
 			}
+		}
+	}
+	
+	
+	@EventHandler(ignoreCancelled=true)
+	public void onTrapdoorClick(PlayerInteractEvent event) {
+		if (!plugin.getConfig().getBoolean("enable-trapdoors")) {
+			return;
+		}
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			
+			SecretTrapdoor door = null;
+			Block clicked = event.getClickedBlock();
+			Block other = null;
+			
+			if (clicked.getType() == Material.LADDER) {
+				if (plugin.isSecretTrapdoor(clicked))
+					plugin.closeTrapdoor(clicked);
+				return;
+			}
+			// opened from below
+			if (clicked.getType() == Material.TRAP_DOOR && clicked.getRelative(BlockFace.UP).getType() != Material.AIR) {
+				other = clicked.getRelative(BlockFace.UP);
+				door = new SecretTrapdoor(clicked, other);
+			} else if (clicked.getRelative(BlockFace.DOWN).getType() == Material.TRAP_DOOR) { // opened from above
+				other = clicked.getRelative(BlockFace.DOWN);
+				door = new SecretTrapdoor(other, clicked);
+				other.getWorld().playEffect(other.getLocation(), Effect.DOOR_TOGGLE, 0);
+			}
+			
+			if (door != null) {
+				event.setCancelled(true);
+				door.open();
+				plugin.addTrapdoor(door);
+			}
+			
 		}
 	}
 	

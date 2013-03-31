@@ -1,2 +1,3 @@
 use-permissions: true
 enable-redstone: true
+enable-trapdoors: true

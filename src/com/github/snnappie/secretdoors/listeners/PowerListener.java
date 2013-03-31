@@ -1,4 +1,4 @@
-package com.github.snnappie.secretdoors;
+package com.github.snnappie.secretdoors.listeners;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -9,6 +9,8 @@ import org.bukkit.event.Listener;
 
 import org.bukkit.event.block.BlockRedstoneEvent;
 
+import com.github.snnappie.secretdoors.SecretDoor;
+import com.github.snnappie.secretdoors.SecretDoors;
 import com.github.snnappie.secretdoors.SecretDoor.Direction;
 
 
@@ -18,12 +20,12 @@ import com.github.snnappie.secretdoors.SecretDoor.Direction;
  * 
  *
  */
-public class SecretDoorsPowerListener implements Listener {
+public class PowerListener implements Listener {
 
 	
 	private SecretDoors plugin;
 	
-	public SecretDoorsPowerListener(SecretDoors plugin) {
+	public PowerListener(SecretDoors plugin) {
 		this.plugin = plugin;
 	}
 	

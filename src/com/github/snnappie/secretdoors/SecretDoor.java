@@ -14,8 +14,6 @@ import org.bukkit.material.Vine;
 
 /**
  * Original Author: MrChick, updated by dill01 and now updated by Snnappie
- * Note: much of this code seems sloppy to me, any suggestions for clarity/efficiency are welcomed
- * This is my first go at bukkit modding
  * @author Snnappie
  *
  */
@@ -155,11 +153,6 @@ public class SecretDoor {
 		return doorBlock;
 	}
 	
-	/*
-	 * ====================================
-	 * Static methods
-	 * ====================================
-	 */
 	public static boolean isDoubleDoor(Block block) {
 		boolean state = false;
 
@@ -190,11 +183,10 @@ public class SecretDoor {
 		return door;
 	}
 	
-	/**
-	 *  Blacklist of blocks that cannot be made into secret doors
-	 *  TODO adapt for configurable blacklist
-	 * @param block
-	 * @return
+
+	/*
+	 * Blacklist of invalid blocks
+	 * TODO adapt for a configurable list
 	 */
 	public static boolean isValidBlock(Block block) {
 
@@ -224,10 +216,9 @@ public class SecretDoor {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @param item
-	 * @return Returns true if the item can be attached to another block (torches, signs, etc)
+
+	/*
+	 * checks if the item can be attached to a block
 	 */
 	public static boolean isAttachableItem(Material item) {
 		
@@ -272,10 +263,9 @@ public class SecretDoor {
 
 		return null;
 	}
-	/**
+	
+	/*
 	 * Checks if door block can be a secret door
-	 * @param door
-	 * @return
 	 */
 	public static boolean canBeSecretDoor(Block door) {
 		if (door.getType() != Material.WOODEN_DOOR)
@@ -294,10 +284,8 @@ public class SecretDoor {
 
 	}
 	
-	/**
-	 * 
-	 * @param door
-	 * @return Returns the direction the door is facing while closed
+	/*
+	 *  Returns the direction the door is facing while closed
 	 */
 	public static BlockFace getDoorFace(Block door) {
 		byte data = door.getData();
