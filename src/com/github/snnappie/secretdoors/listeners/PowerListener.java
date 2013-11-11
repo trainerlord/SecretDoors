@@ -1,5 +1,6 @@
 package com.github.snnappie.secretdoors.listeners;
 
+import com.github.snnappie.secretdoors.SecretDoorHelper;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -11,7 +12,6 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 
 import com.github.snnappie.secretdoors.SecretDoor;
 import com.github.snnappie.secretdoors.SecretDoors;
-import com.github.snnappie.secretdoors.SecretDoor.Direction;
 
 
 /**
@@ -32,17 +32,17 @@ public class PowerListener implements Listener {
 	
 	@EventHandler
 	public void onBlockPowered(BlockRedstoneEvent event) {
-		if (event.getBlock().getType() == Material.WOODEN_DOOR && !SecretDoor.isDoubleDoor(event.getBlock()) && plugin.getConfig().getBoolean("enable-redstone")) {
+		if (event.getBlock().getType() == Material.WOODEN_DOOR && plugin.getConfig().getBoolean("enable-redstone")) {
 			Block door = event.getBlock();
 			
 			// open the door
-			if (!isOpened(door) && SecretDoor.canBeSecretDoor(door)) {
-				plugin.addDoor(new SecretDoor(door, door.getRelative(SecretDoor.getDoorFace(door)), Direction.DOOR_FIRST)).open();
+			if (!isOpened(door) && SecretDoorHelper.canBeSecretDoor(door)) {
+				plugin.addDoor(new SecretDoor(door, door.getRelative(SecretDoorHelper.getDoorFace(door)), SecretDoorHelper.Direction.DOOR_FIRST)).open();
 			}
 			
 			// close the door
-			if (isOpened(door) && plugin.isSecretDoor(SecretDoor.getKeyFromBlock(door))) {
-				plugin.closeDoor(SecretDoor.getKeyFromBlock(door));
+			if (isOpened(door) && plugin.isSecretDoor(SecretDoorHelper.getKeyFromBlock(door))) {
+				plugin.closeDoor(SecretDoorHelper.getKeyFromBlock(door));
 			}
 		}
 	}

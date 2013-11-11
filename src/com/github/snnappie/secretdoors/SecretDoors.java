@@ -67,7 +67,7 @@ public class SecretDoors extends JavaPlugin {
 
 	public void closeDoor(Block door) {
 		if (isSecretDoor(door)) {
-			((SecretDoor) this.doors.get(door)).close();
+			this.doors.get(door).close();
 			this.doors.remove(door);
 		}
 	}

@@ -1,5 +1,6 @@
 package com.github.snnappie.secretdoors.listeners;
 
+import com.github.snnappie.secretdoors.SecretDoorHelper;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -12,71 +13,103 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import com.github.snnappie.secretdoors.SecretDoor;
 import com.github.snnappie.secretdoors.SecretDoors;
 import com.github.snnappie.secretdoors.SecretTrapdoor;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Attachable;
 
 public class PlayerListener implements Listener {
 	private SecretDoors plugin = null;
 
 
+    // TODO move these constants somewhere else
+    public static final String PERMISSION_SD_USE    = "secretdoors.use";
+    public static final String CONFIG_PERMISSIONS_ENABLED   = "use-permissions";
+
 	public PlayerListener(SecretDoors plugin) {
 		this.plugin = plugin;
 	}
 
-	@EventHandler
-	public void onDoorClick(PlayerInteractEvent pie) {
-		if (Action.RIGHT_CLICK_BLOCK.equals(pie.getAction()) && (SecretDoor.isAttachableItem(pie.getClickedBlock().getType()) || SecretDoor.isValidBlock(pie.getClickedBlock()))) {
-			
-			// exit if the user clicked on the top or bottom block of a door/secret door block
-			if (pie.getBlockFace() == BlockFace.UP || pie.getBlockFace() == BlockFace.DOWN)
-				return;
-			// user wants to use permissions
-			if (plugin.getConfig().getBoolean("use-permissions")) {
-				if (!pie.getPlayer().hasPermission("secretdoors.use")) {
-					return;
-				}
-			}
-			
-			Block clicked = pie.getClickedBlock();
-			Block behind = clicked.getRelative(pie.getBlockFace().getOppositeFace());
-			SecretDoor door = null;
 
-			if ((Material.WOODEN_DOOR.equals(clicked.getType())) && (!SecretDoor.isDoubleDoor(clicked))) {
-				if (this.plugin.isSecretDoor(SecretDoor.getKeyFromBlock(clicked))) {
-					this.plugin.closeDoor(SecretDoor.getKeyFromBlock(clicked));
-				} else if (!Material.AIR.equals(behind.getType())) {
-					if (SecretDoor.canBeSecretDoor(clicked)) {
-						door = new SecretDoor(clicked, behind, SecretDoor.Direction.DOOR_FIRST);
-					}
-				}
-			} else if ((Material.WOODEN_DOOR.equals(behind.getType())) && (!SecretDoor.isDoubleDoor(behind))) {
-				// TODO adapt this to support opening if there is already an attached item on the block
-				if (!SecretDoor.isAttachableItem(pie.getMaterial())) {
-					if (this.plugin.isSecretDoor(SecretDoor.getKeyFromBlock(behind))) {
-						this.plugin.closeDoor(SecretDoor.getKeyFromBlock(behind));
-					} else if (SecretDoor.canBeSecretDoor(behind)) {
-						door = new SecretDoor(behind, clicked, SecretDoor.Direction.BLOCK_FIRST);
-					}
-				}
-				
-			} else if (SecretDoor.isAttachableItem(clicked.getType()) && SecretDoor.isValidBlock(behind)) {
-				Block doorBlock = behind.getRelative(pie.getBlockFace().getOppositeFace());
-				if (doorBlock.getType() == Material.WOODEN_DOOR && !SecretDoor.isDoubleDoor(doorBlock)) {
-					if (this.plugin.isSecretDoor(SecretDoor.getKeyFromBlock(doorBlock))) {
-						this.plugin.closeDoor(SecretDoor.getKeyFromBlock(doorBlock));
-					} else if (SecretDoor.canBeSecretDoor(doorBlock)) {
-						door = new SecretDoor(doorBlock, behind, SecretDoor.Direction.BLOCK_FIRST);
-					}
-				}
-				
-			}
-			
-			
-			if (door != null) {
-				this.plugin.addDoor(door).open();
-			}
-		}
-	}
+    /*
+     * Handle when the user clicks on a door
+     */
+    @EventHandler
+    public void onDoorClick(PlayerInteractEvent event) {
+
+        // handle permissions
+        if (plugin.getConfig().getBoolean(CONFIG_PERMISSIONS_ENABLED)) {
+            if (!event.getPlayer().hasPermission(PERMISSION_SD_USE)) {
+                return;
+            }
+        }
+
+        Block door = event.getClickedBlock();
+        // right click and is door
+        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && door.getType() == Material.WOODEN_DOOR) {
+
+            // is a closed secret door
+            if (SecretDoorHelper.canBeSecretDoor(door)) {
+                BlockFace doorFace = SecretDoorHelper.getDoorFace(door);
+
+                // get the blocks in-front of the door
+                Block other = door.getRelative(doorFace);
+                plugin.addDoor(new SecretDoor(door,other, SecretDoorHelper.Direction.DOOR_FIRST)).open();
+            }
+            // is an opened secret door
+            else if (plugin.isSecretDoor(SecretDoorHelper.getKeyFromBlock(door))) {
+                plugin.closeDoor(SecretDoorHelper.getKeyFromBlock(door));
+            }
+        }
+    }
+
+    /*
+     * Handle when the user clicks on the block part of a secret door
+     */
+    @EventHandler
+    public void onDoorBlockCLick(PlayerInteractEvent event) {
+
+        // handle permissions
+        if (plugin.getConfig().getBoolean(CONFIG_PERMISSIONS_ENABLED)) {
+            if (!event.getPlayer().hasPermission(PERMISSION_SD_USE)) {
+                return;
+            }
+        }
+
+        Block clicked = event.getClickedBlock();
+        if (Action.RIGHT_CLICK_BLOCK.equals(event.getAction())) {
+
+            // handle `attached blocks` (signs, torches, etc)
+            if (SecretDoorHelper.isAttachableItem(clicked.getType())) {
+
+                Attachable item = SecretDoorHelper.getSimpleAttachable(clicked);
+                BlockFace face  = item.getAttachedFace();
+                Block block     = clicked.getRelative(face);
+                Block door      = clicked.getRelative(face, 2);
+
+                if (SecretDoorHelper.isValidBlock(block) && SecretDoorHelper.canBeSecretDoor(door)) {
+                    plugin.addDoor(new SecretDoor(door,block, SecretDoorHelper.Direction.BLOCK_FIRST)).open();
+                }
+            }
+            // handle regular blocks (non-attachables)
+            else if (SecretDoorHelper.isValidBlock(clicked)) {
+
+                // special case: user is holding an attachable item already (they are attempting to place it on the door blocks)
+                ItemStack heldItem = event.getItem();
+                if (heldItem != null && SecretDoorHelper.isAttachableItem(heldItem.getType())) {
+                    return;
+                }
+
+                BlockFace face  = event.getBlockFace().getOppositeFace();
+                Block door      = clicked.getRelative(face);
+
+                if (SecretDoorHelper.canBeSecretDoor(door)) {
+                    plugin.addDoor(new SecretDoor(door, clicked, SecretDoorHelper.Direction.BLOCK_FIRST)).open();
+                }
+            }
+        }
+    }
 	
-	
+
+    // TODO: revisit this for clean-up
 	@EventHandler(ignoreCancelled=true)
 	public void onTrapdoorClick(PlayerInteractEvent event) {
 		if (!plugin.getConfig().getBoolean("enable-trapdoors")) {
