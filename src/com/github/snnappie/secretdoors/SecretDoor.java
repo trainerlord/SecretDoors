@@ -34,8 +34,8 @@ public class SecretDoor {
 	// 0 is top block/value, 1 is bottom
 	public SecretDoor(Block door, Block other, SecretDoorHelper.Direction direction) {
 		if (door.getType() == Material.WOODEN_DOOR) { // is door
-			
-			if ((door.getData() & 0x8) == 0x8) { // is upper half
+
+			if (SecretDoorHelper.isTopHalf(door)) { // is upper half
 				doorBlock = door.getRelative(BlockFace.DOWN);
 
 				this.blocks[0] = other;

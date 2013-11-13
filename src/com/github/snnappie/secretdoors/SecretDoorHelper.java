@@ -7,34 +7,26 @@ import org.bukkit.material.*;
 
 /**
  * @author Snnappie
- *
- * This class is essentially a set of static methods that are useful for SecretDoors.
- * (I prefer it this way - I've been developing heavily in Scala and prefer the `companion object` concept to having static and non-static methods
- * living in the same space)
+ *         <p/>
+ *         This class is essentially a set of static methods that are useful for SecretDoors.
+ *         (I prefer it this way - I've been developing heavily in Scala and prefer the `companion object` concept to having static and non-static methods
+ *         living in the same space)
  */
 public class SecretDoorHelper {
 
 
-//    public static boolean isDoubleDoor(Block block) {
-//        boolean state = false;
-//
-//        Block[] blocks = { block.getRelative(BlockFace.EAST),
-//                block.getRelative(BlockFace.NORTH),
-//                block.getRelative(BlockFace.WEST),
-//                block.getRelative(BlockFace.SOUTH) };
-//        for (Block b : blocks) {
-//            if (Material.WOODEN_DOOR.equals(b.getType()))
-//                state = true;
-//        }
-//        return state;
-//    }
+    public static boolean isTopHalf(Block door) {
+        if (door.getType() != Material.WOODEN_DOOR)
+            throw new IllegalArgumentException("Incorrect Block type, expected WOODEN_DOOR but got " + door.getType());
+        return (door.getData() & 0x8) == 0x8;
+    }
 
     public static Block getKeyFromBlock(Block block) {
         Block door = null;
 
         if (block.getType() == Material.WOODEN_DOOR) {
             // return lower half only
-            if ((block.getData() & 0x8) == 0x8)
+            if (isTopHalf(block))
                 door = block.getRelative(BlockFace.DOWN);
             else {
                 door = block;
@@ -43,10 +35,10 @@ public class SecretDoorHelper {
         return door;
     }
 
-    /*
-* Blacklist of invalid blocks
-* TODO adapt for a configurable list
-*/
+    /**
+     * Blacklist of invalid blocks
+     * TODO adapt for a configurable list
+     */
     public static boolean isValidBlock(Block block) {
 
         if (block != null) {
@@ -77,23 +69,23 @@ public class SecretDoorHelper {
         return false;
     }
 
-    /*
-* checks if the item can be attached to a block
-*/
+    /**
+     * checks if the item can be attached to a block
+     */
     public static boolean isAttachableItem(Material item) {
 
         if (item != null) {
             switch (item) {
-            case TORCH:
-            case SIGN:
-            case WALL_SIGN:
-            case LEVER:
-            case STONE_BUTTON: // NOTE: for whatever reason, Material enum doesn't include wooden buttons
-            case LADDER:
-            case VINE:
-                return true;
-            default:
-                return false;
+                case TORCH:
+                case SIGN:
+                case WALL_SIGN:
+                case LEVER:
+                case STONE_BUTTON: // NOTE: for whatever reason, Material enum doesn't include wooden buttons
+                case LADDER:
+                case VINE:
+                    return true;
+                default:
+                    return false;
             }
         }
         return false;
@@ -107,32 +99,37 @@ public class SecretDoorHelper {
             int id = item.getTypeId();
             byte data = item.getData();
             switch (item.getType()) {
-            case TORCH: return new Torch(id, data);
-            case LADDER: return new Ladder(id, data);
-            case LEVER: return new Lever(id, data);
-            case STONE_BUTTON: return new Button(id, data);
-case WALL_SIGN: return new Sign(id, data);
-            default:
-                return null;
+                case TORCH:
+                    return new Torch(id, data);
+                case LADDER:
+                    return new Ladder(id, data);
+                case LEVER:
+                    return new Lever(id, data);
+                case STONE_BUTTON:
+                    return new Button(id, data);
+                case WALL_SIGN:
+                    return new Sign(id, data);
+                default:
+                    return null;
             }
         }
 
         return null;
     }
 
-    /*
-* Checks if door block can be a secret door
-*/
+    /**
+     * Checks if door block can be a secret door
+     */
     public static boolean canBeSecretDoor(Block door) {
         if (door.getType() != Material.WOODEN_DOOR)
             return false;
         BlockFace face = getDoorFace(door);
-        if ((door.getData() & 0x8) == 0x8) {
+        if (isTopHalf(door)) {
             door = door.getRelative(BlockFace.DOWN);
         }
         if (Material.AIR != door.getRelative(face).getType()
                 || Material.AIR != door.getRelative(face).getRelative(BlockFace.UP).getType()) {
-            if (isValidBlock(door.getRelative(face))  && isValidBlock(door.getRelative(face).getRelative(BlockFace.UP)))
+            if (isValidBlock(door.getRelative(face)) && isValidBlock(door.getRelative(face).getRelative(BlockFace.UP)))
                 return true;
         }
 
@@ -140,23 +137,23 @@ case WALL_SIGN: return new Sign(id, data);
 
     }
 
-    /*
-*  Returns the direction the door is facing while closed
-*/
+    /**
+     * Returns the direction the door is facing while closed
+     */
     public static BlockFace getDoorFace(Block door) {
-        byte data = door.getData();
-        if ((data & 0x8) == 0x8) {
-            door = door.getRelative(BlockFace.DOWN);
-            data = door.getData();
-        }
 
+        byte data = isTopHalf(door) ? door.getRelative(BlockFace.DOWN).getData() : door.getData();
         if ((data & 0x3) == 0x3) return BlockFace.SOUTH;
         if ((data & 0x1) == 0x1) return BlockFace.NORTH;
         if ((data & 0x2) == 0x2) return BlockFace.EAST;
-return BlockFace.WEST;
+        return BlockFace.WEST;
     }
 
+    /**
+     * Determines if the Block was clicked or the Door was clicked.
+     * TODO: review if this is even necessary - if so, consider re-naming.  `Direction` doesn't accurately describe it's use.
+     */
     public static enum Direction {
-        BLOCK_FIRST, DOOR_FIRST;
+        BLOCK_FIRST, DOOR_FIRST
     }
 }

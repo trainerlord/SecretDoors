@@ -107,7 +107,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-	
+
 
     // TODO: revisit this for clean-up
 	@EventHandler(ignoreCancelled=true)
