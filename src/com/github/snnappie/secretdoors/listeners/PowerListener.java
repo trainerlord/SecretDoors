@@ -47,17 +47,15 @@ public class PowerListener implements Listener {
 		}
 	}
 	/**
-	 * 
-	 * @param door
+	 *
 	 * @return Returns true if the door is opened
 	 */
 	private boolean isOpened(Block door) {
-		byte data = door.getData();
-		if ((data & 0x8) == 0x8) {
+		if (SecretDoorHelper.isTopHalf(door)) {
 			door = door.getRelative(BlockFace.DOWN);
-			data = door.getData();
 		}
-		
+
+        byte data = door.getData();
 		return ((data & 0x4) == 0x4);
 	}
 	

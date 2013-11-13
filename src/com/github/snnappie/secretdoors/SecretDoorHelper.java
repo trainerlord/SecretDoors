@@ -82,7 +82,6 @@ public class SecretDoorHelper {
                 case LEVER:
                 case STONE_BUTTON: // NOTE: for whatever reason, Material enum doesn't include wooden buttons
                 case LADDER:
-                case VINE:
                     return true;
                 default:
                     return false;
@@ -91,30 +90,9 @@ public class SecretDoorHelper {
         return false;
     }
 
-    // TODO review the necessity of this method
-    // used in constructor to determine if hanging blocks are attached to the door blocks
-    public static Attachable getSimpleAttachable(Block item) {
+    public static Attachable getAttachableFromBlock(Block block) {
 
-        if (item != null) {
-            int id = item.getTypeId();
-            byte data = item.getData();
-            switch (item.getType()) {
-                case TORCH:
-                    return new Torch(id, data);
-                case LADDER:
-                    return new Ladder(id, data);
-                case LEVER:
-                    return new Lever(id, data);
-                case STONE_BUTTON:
-                    return new Button(id, data);
-                case WALL_SIGN:
-                    return new Sign(id, data);
-                default:
-                    return null;
-            }
-        }
-
-        return null;
+        return isAttachableItem(block.getType()) ? (Attachable) block.getState().getData() : null;
     }
 
     /**
@@ -124,15 +102,16 @@ public class SecretDoorHelper {
         if (door.getType() != Material.WOODEN_DOOR)
             return false;
         BlockFace face = getDoorFace(door);
-        if (isTopHalf(door)) {
-            door = door.getRelative(BlockFace.DOWN);
-        }
-        if (Material.AIR != door.getRelative(face).getType()
-                || Material.AIR != door.getRelative(face).getRelative(BlockFace.UP).getType()) {
-            if (isValidBlock(door.getRelative(face)) && isValidBlock(door.getRelative(face).getRelative(BlockFace.UP)))
-                return true;
-        }
+        door = getKeyFromBlock(door);
 
+        Block bottom = door.getRelative(face);
+        Block top    = bottom.getRelative(BlockFace.UP);
+        // This is done to avoid creating a door with AIR blocks after a door is opened.
+        // It's handled this way instead of adding Material.AIR to the black list so that doors can still be created
+        // when only one block is used.
+        if (bottom.getType() != Material.AIR || top.getType() != Material.AIR)
+            if (isValidBlock(bottom) && isValidBlock(top)) // AIR is considered `valid` in this case
+                return true;
         return false;
 
     }
@@ -142,7 +121,8 @@ public class SecretDoorHelper {
      */
     public static BlockFace getDoorFace(Block door) {
 
-        byte data = isTopHalf(door) ? door.getRelative(BlockFace.DOWN).getData() : door.getData();
+        door = getKeyFromBlock(door);
+        byte data = door.getData();
         if ((data & 0x3) == 0x3) return BlockFace.SOUTH;
         if ((data & 0x1) == 0x1) return BlockFace.NORTH;
         if ((data & 0x2) == 0x2) return BlockFace.EAST;

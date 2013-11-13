@@ -14,8 +14,8 @@ import com.github.snnappie.secretdoors.listeners.PlayerListener;
 import com.github.snnappie.secretdoors.listeners.PowerListener;
 
 public class SecretDoors extends JavaPlugin {
-	private HashMap<Block, SecretDoor> doors = new HashMap<Block, SecretDoor>();
-	private HashMap<Block, SecretTrapdoor> trapdoors = new HashMap<Block, SecretTrapdoor>();
+	private HashMap<Block, SecretDoor> doors = new HashMap<>();
+	private HashMap<Block, SecretTrapdoor> trapdoors = new HashMap<>();
 
 	public void onDisable() {
 		for (Block door : this.doors.keySet()) {
@@ -90,9 +90,6 @@ public class SecretDoors extends JavaPlugin {
 	}
 	
 	public boolean isSecretTrapdoor(Block ladder) {
-		if (ladder.getType() == Material.LADDER) {
-			return trapdoors.containsKey(ladder);
-		}
-		return false;
-	}
+        return ladder.getType() == Material.LADDER && trapdoors.containsKey(ladder);
+    }
 }

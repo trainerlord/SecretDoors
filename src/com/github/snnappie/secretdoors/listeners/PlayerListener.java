@@ -80,7 +80,7 @@ public class PlayerListener implements Listener {
             // handle `attached blocks` (signs, torches, etc)
             if (SecretDoorHelper.isAttachableItem(clicked.getType())) {
 
-                Attachable item = SecretDoorHelper.getSimpleAttachable(clicked);
+                Attachable item = SecretDoorHelper.getAttachableFromBlock(clicked);
                 BlockFace face  = item.getAttachedFace();
                 Block block     = clicked.getRelative(face);
                 Block door      = clicked.getRelative(face, 2);
@@ -119,7 +119,7 @@ public class PlayerListener implements Listener {
 			
 			SecretTrapdoor door = null;
 			Block clicked = event.getClickedBlock();
-			Block other = null;
+			Block other;
 			
 			if (clicked.getType() == Material.LADDER) {
 				if (plugin.isSecretTrapdoor(clicked))

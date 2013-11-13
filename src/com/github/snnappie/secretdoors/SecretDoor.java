@@ -19,11 +19,11 @@ public class SecretDoor {
 	private Block doorBlock;
 	private Block[] blocks = new Block[2];
 	private Material[] materials = new Material[2];
-	private byte[] data = new byte[2];
+	private MaterialData[] data = new MaterialData[2];
 	
 	private Block[] attachedBlocks = new Block[8];
 	private Material[] attachedMats = new Material[8];
-	private byte[] attachedData = new byte[8];
+	private BlockFace[] attachedDirections = new BlockFace[8];
 	private SecretDoorHelper.Direction direction = null;
 
 	private int attachedCount = 0;
@@ -33,6 +33,7 @@ public class SecretDoor {
     // TODO: review this for clean-up
 	// 0 is top block/value, 1 is bottom
 	public SecretDoor(Block door, Block other, SecretDoorHelper.Direction direction) {
+
 		if (door.getType() == Material.WOODEN_DOOR) { // is door
 
 			if (SecretDoorHelper.isTopHalf(door)) { // is upper half
@@ -51,8 +52,8 @@ public class SecretDoor {
 		this.materials[0] = this.blocks[0].getType();
 		this.materials[1] = this.blocks[1].getType();
 
-		this.data[0] = this.blocks[0].getData();
-		this.data[1] = this.blocks[1].getData();
+		this.data[0] = this.blocks[0].getState().getData();
+		this.data[1] = this.blocks[1].getState().getData();
 
 		this.direction = direction;
 		
@@ -60,63 +61,66 @@ public class SecretDoor {
 		BlockFace[] faces = { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN };
 		for (BlockFace face : faces) {
 			for (int i = 0; i < 2; i++) {
-				if (SecretDoorHelper.isAttachableItem(blocks[i].getRelative(face).getType())) {
-					
-					// if it is a simple attachable item
-					Attachable sam = SecretDoorHelper.getSimpleAttachable(blocks[i].getRelative(face));
-					// skip it if it isn't facing the same way
-					if (sam != null && sam.getFacing() != face)
-						continue;
-					// handle sign text
-					if (blocks[i].getRelative(face).getType() == Material.WALL_SIGN) {
-						
-						// if the sign isn't attached to the door blocks, skip it
-						org.bukkit.material.Sign sM = new org.bukkit.material.Sign(blocks[i]
-								.getRelative(face).getTypeId(), blocks[i].getRelative(face).getData());
+                Block attached = blocks[i].getRelative(face);
 
-						if (sM.getFacing() != face)
-							continue;
-						Sign s = (Sign) (blocks[i].getRelative(face).getState());
-						
-						// get the text from the sign
-						for (int j = 0; j < 4; j++) {
-							if (s.getLine(j) != null) {
-								signText[attachedCount][j] = s.getLine(j);
-							} else {
-								signText[attachedCount][j] = "";
-							}
-						}
-					}
+                // NOTE: special case: vines
+                if (attached.getType() == Material.VINE) {
+
+                    Vine vine = (Vine) attached.getState();
+
+
+                    // if the vine isn't attached to the door block, skip it
+                    if (vine.isOnFace(face)) continue;
+                }
+
+                // handle sign text
+                else if (attached.getType() == Material.WALL_SIGN) {
+                    handleSignText(attached);
+                }
 					
-					// NOTE: special case: vines
-					if (blocks[i].getRelative(face).getType() == Material.VINE) {
-						Vine vine = new Vine(blocks[i].getRelative(face).getTypeId(),
-								blocks[i].getRelative(face).getData());
-						
-						// if the vine isn't attached to the door block, skip it
-						if (vine.isOnFace(face)) continue;
-					}
-					attachedBlocks[attachedCount] = blocks[i].getRelative(face);
-					attachedMats[attachedCount] = attachedBlocks[attachedCount].getType();
-					attachedData[attachedCount] = attachedBlocks[attachedCount].getData();
-					attachedCount++;
-				}
-			}
+				// if it is a simple attachable item
+				Attachable sam = SecretDoorHelper.getAttachableFromBlock(attached);
+                if (sam != null) {
+                    // skip it if it isn't facing the same way
+                    if (sam.getFacing() != face)
+                        continue;
+
+
+
+                    attachedBlocks[attachedCount] = attached;
+                    attachedMats[attachedCount] = attached.getType();
+                    attachedDirections[attachedCount] = sam.getFacing();
+                    attachedCount++;
+                }
+            }
 		}
 	}
+
+    private void handleSignText(Block block) {
+        Sign s = (Sign) (block.getState());
+
+        // get the text from the sign
+        for (int j = 0; j < 4; j++) {
+            if (s.getLine(j) != null) {
+                signText[attachedCount][j] = s.getLine(j);
+            } else {
+                signText[attachedCount][j] = "";
+            }
+        }
+    }
 
 
 	// closes the door
 	public void close() {
 		for (int i = 0; i < 2; i++) {
 			this.blocks[i].setType(this.materials[i]);
-			this.blocks[i].setData(this.data[i]);
+			this.blocks[i].getState().setData(this.data[i]);
 		}
 		// handle attached blocks
 		for (int i = 0; i < attachedCount; i++) {
 			
 			attachedBlocks[i].setType(attachedMats[i]);
-			attachedBlocks[i].setData(attachedData[i]);
+            ((Attachable) attachedBlocks[i].getState().getData()).setFacingDirection(attachedDirections[i]);
 			
 			// handle sign text
 			if (attachedBlocks[i].getType() == Material.WALL_SIGN || attachedBlocks[i].getType() == Material.SIGN_POST) {

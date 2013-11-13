@@ -1,5 +1,6 @@
 package com.github.snnappie.secretdoors.listeners;
 
+import com.github.snnappie.secretdoors.SecretDoorHelper;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,7 +22,7 @@ public class BlockListener implements Listener {
 		Block block = bbe.getBlock();
 		if (block.getType() == Material.WOODEN_DOOR) {
 			
-			if ((block.getData() & 0x8) == 0x8)
+			if (SecretDoorHelper.isTopHalf(block))
 				block = block.getRelative(BlockFace.DOWN);
 				if (this.plugin.isSecretDoor(block))
 					this.plugin.closeDoor(block);
