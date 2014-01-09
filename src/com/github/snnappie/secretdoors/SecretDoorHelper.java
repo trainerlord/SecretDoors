@@ -7,7 +7,6 @@ import org.bukkit.material.*;
 
 /**
  * @author Snnappie
- *         <p/>
  *         This class is essentially a set of static methods that are useful for SecretDoors.
  *         (I prefer it this way - I've been developing heavily in Scala and prefer the `companion object` concept to having static and non-static methods
  *         living in the same space)
@@ -60,6 +59,7 @@ public class SecretDoorHelper {
                 case REDSTONE_TORCH_OFF:
                 case WOODEN_DOOR:
                 case IRON_DOOR:
+                case IRON_DOOR_BLOCK:
                     return false;
                 default:
                     return true;
@@ -121,12 +121,14 @@ public class SecretDoorHelper {
      */
     public static BlockFace getDoorFace(Block door) {
 
-        door = getKeyFromBlock(door);
-        byte data = door.getData();
-        if ((data & 0x3) == 0x3) return BlockFace.SOUTH;
-        if ((data & 0x1) == 0x1) return BlockFace.NORTH;
-        if ((data & 0x2) == 0x2) return BlockFace.EAST;
-        return BlockFace.WEST;
+//        door = getKeyFromBlock(door);
+//        byte data = door.getData();
+//        if ((data & 0x3) == 0x3) return BlockFace.SOUTH;
+//        if ((data & 0x1) == 0x1) return BlockFace.NORTH;
+//        if ((data & 0x2) == 0x2) return BlockFace.EAST;
+//        return BlockFace.WEST;
+
+        return ((Directional) getKeyFromBlock(door).getState().getData()).getFacing();
     }
 
     /**

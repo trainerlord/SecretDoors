@@ -1,6 +1,9 @@
 package com.github.snnappie.secretdoors.listeners;
 
+import com.github.snnappie.secretdoors.SecretDoor;
 import com.github.snnappie.secretdoors.SecretDoorHelper;
+import com.github.snnappie.secretdoors.SecretDoors;
+import com.github.snnappie.secretdoors.SecretTrapdoor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -9,10 +12,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-
-import com.github.snnappie.secretdoors.SecretDoor;
-import com.github.snnappie.secretdoors.SecretDoors;
-import com.github.snnappie.secretdoors.SecretTrapdoor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Attachable;
 
@@ -65,7 +64,7 @@ public class PlayerListener implements Listener {
      * Handle when the user clicks on the block part of a secret door
      */
     @EventHandler
-    public void onDoorBlockCLick(PlayerInteractEvent event) {
+    public void onDoorBlockClick(PlayerInteractEvent event) {
 
         // handle permissions
         if (plugin.getConfig().getBoolean(CONFIG_PERMISSIONS_ENABLED)) {

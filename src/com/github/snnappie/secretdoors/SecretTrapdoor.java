@@ -31,7 +31,7 @@ public class SecretTrapdoor {
 
 	public void open() {
 		doorBlock.setType(Material.LADDER);
-		doorBlock.setData(getDirectionData(doorBlock));
+		doorBlock.setData(getDirectionData());
 
 		above.setType(Material.AIR);
 	}
@@ -49,7 +49,7 @@ public class SecretTrapdoor {
 		return doorBlock.getType() == Material.LADDER ? doorBlock : null;
 	}
 	
-	private byte getDirectionData(Block block) {
+	private byte getDirectionData() {
 		switch (direction) {
 		case NORTH: return 0x2;
 		case SOUTH: return 0x3;
