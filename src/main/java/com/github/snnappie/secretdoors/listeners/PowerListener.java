@@ -32,7 +32,7 @@ public class PowerListener implements Listener {
 	
 	@EventHandler
 	public void onBlockPowered(BlockRedstoneEvent event) {
-		if (event.getBlock().getType() == Material.WOODEN_DOOR && plugin.getConfig().getBoolean("enable-redstone")) {
+		if (event.getBlock().getType() == Material.WOODEN_DOOR && plugin.getConfig().getBoolean(SecretDoors.CONFIG_ENABLE_REDSTONE)) {
 			Block door = event.getBlock();
 			
 			// open the door

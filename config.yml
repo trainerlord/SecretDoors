@@ -1,3 +1,5 @@
 use-permissions: true
 enable-redstone: true
 enable-trapdoors: true
+enable-timers: false
+close-time-seconds: 5

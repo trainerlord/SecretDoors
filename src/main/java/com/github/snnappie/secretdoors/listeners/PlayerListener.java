@@ -19,10 +19,6 @@ public class PlayerListener implements Listener {
 	private SecretDoors plugin = null;
 
 
-    // TODO move these constants somewhere else
-    public static final String PERMISSION_SD_USE    = "secretdoors.use";
-    public static final String CONFIG_PERMISSIONS_ENABLED   = "use-permissions";
-
 	public PlayerListener(SecretDoors plugin) {
 		this.plugin = plugin;
 	}
@@ -35,8 +31,8 @@ public class PlayerListener implements Listener {
     public void onDoorClick(PlayerInteractEvent event) {
 
         // handle permissions
-        if (plugin.getConfig().getBoolean(CONFIG_PERMISSIONS_ENABLED)) {
-            if (!event.getPlayer().hasPermission(PERMISSION_SD_USE)) {
+        if (plugin.getConfig().getBoolean(SecretDoors.CONFIG_PERMISSIONS_ENABLED)) {
+            if (!event.getPlayer().hasPermission(SecretDoors.PERMISSION_SD_USE)) {
                 return;
             }
         }
@@ -67,8 +63,8 @@ public class PlayerListener implements Listener {
     public void onDoorBlockClick(PlayerInteractEvent event) {
 
         // handle permissions
-        if (plugin.getConfig().getBoolean(CONFIG_PERMISSIONS_ENABLED)) {
-            if (!event.getPlayer().hasPermission(PERMISSION_SD_USE)) {
+        if (plugin.getConfig().getBoolean(SecretDoors.CONFIG_PERMISSIONS_ENABLED)) {
+            if (!event.getPlayer().hasPermission(SecretDoors.PERMISSION_SD_USE)) {
                 return;
             }
         }
@@ -111,7 +107,7 @@ public class PlayerListener implements Listener {
     // TODO: revisit this for clean-up
 	@EventHandler(ignoreCancelled=true)
 	public void onTrapdoorClick(PlayerInteractEvent event) {
-		if (!plugin.getConfig().getBoolean("enable-trapdoors")) {
+		if (!plugin.getConfig().getBoolean(SecretDoors.CONFIG_ENABLE_TRAPDOORS)) {
 			return;
 		}
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
