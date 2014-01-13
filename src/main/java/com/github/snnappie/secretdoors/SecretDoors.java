@@ -3,12 +3,13 @@ package com.github.snnappie.secretdoors;
 import com.github.snnappie.secretdoors.listeners.BlockListener;
 import com.github.snnappie.secretdoors.listeners.PlayerListener;
 import com.github.snnappie.secretdoors.listeners.PowerListener;
+import com.github.snnappie.secretdoors.tasks.CloseDoorTask;
+import com.github.snnappie.secretdoors.tasks.CloseTrapDoorTask;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class SecretDoors extends JavaPlugin {
 	private HashMap<Block, SecretTrapdoor> trapdoors = new HashMap<>();
 
     private HashMap<SecretDoor, CloseDoorTask> doorTasks = new HashMap<>();
+    private HashMap<SecretTrapdoor, CloseTrapDoorTask> trapdoorTasks = new HashMap<>();
 
     public int closeTime;
 
@@ -39,11 +41,11 @@ public class SecretDoors extends JavaPlugin {
 
 	public void onDisable() {
 		for (Block door : this.doors.keySet()) {
-			this.doors.get(door).close();
+			closeDoor(door);
 		}
 		
 		for (Block ladder : trapdoors.keySet()) {
-			trapdoors.get(ladder).close();
+			closeTrapdoor(ladder);
 		}
 	}
 
@@ -57,7 +59,7 @@ public class SecretDoors extends JavaPlugin {
         // config
         getConfig().options().copyDefaults(true);
 		saveConfig();
-        this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME);
+        this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME) < 0 ? 0 : getConfig().getInt(CONFIG_CLOSE_TIME);
 	}
 
 	// handles commands
@@ -73,7 +75,7 @@ public class SecretDoors extends JavaPlugin {
 					}
 				}
 				reloadConfig();
-                this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME);
+                this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME) < 0 ? 0 : getConfig().getInt(CONFIG_CLOSE_TIME);
 				sender.sendMessage(ChatColor.RED + "Secret Doors config reloaded");
 				return true;
 			}
@@ -124,17 +126,39 @@ public class SecretDoors extends JavaPlugin {
 	public void addTrapdoor(SecretTrapdoor door) {
 		if (door.getKey().getType() == Material.LADDER) {
 			trapdoors.put(door.getKey(), door);
+
+            // add a task to close the trapdoor
+            if (getConfig().getBoolean(CONFIG_ENABLE_TIMERS)) {
+                CloseTrapDoorTask task = new CloseTrapDoorTask(this, door);
+                task.runTaskLater(this, 20 * this.closeTime);
+                trapdoorTasks.put(door, task);
+            }
 		}
 	}
 	
 	public void closeTrapdoor(Block ladder) {
 		if (ladder.getType() == Material.LADDER) {
 			if (isSecretTrapdoor(ladder)) {
-				trapdoors.get(ladder).close();
-				trapdoors.remove(ladder);
+                SecretTrapdoor trapdoor = trapdoors.remove(ladder);
+                trapdoor.close();
+
+                // cancel the task if the door was closed manually
+                if (getConfig().getBoolean(CONFIG_ENABLE_TIMERS)) {
+                    trapdoorTasks.remove(trapdoor).cancel();
+                }
 			}
 		}
 	}
+
+    public void closeTrapdoorAuto(Block ladder) {
+        if (ladder.getType() == Material.LADDER) {
+            if (isSecretTrapdoor(ladder)) {
+                SecretTrapdoor trapdoor = trapdoors.remove(ladder);
+                trapdoor.close();
+                trapdoorTasks.remove(trapdoor);
+            }
+        }
+    }
 	
 	public boolean isSecretTrapdoor(Block ladder) {
         return ladder.getType() == Material.LADDER && trapdoors.containsKey(ladder);

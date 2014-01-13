@@ -1,5 +1,7 @@
-package com.github.snnappie.secretdoors;
+package com.github.snnappie.secretdoors.tasks;
 
+import com.github.snnappie.secretdoors.SecretDoor;
+import com.github.snnappie.secretdoors.SecretDoors;
 import org.bukkit.scheduler.BukkitRunnable;
 
 
