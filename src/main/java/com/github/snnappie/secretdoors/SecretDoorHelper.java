@@ -45,25 +45,37 @@ public class SecretDoorHelper {
             if (isAttachableItem(block.getType())) {
                 return false;
             }
-            switch (block.getType()) {
-                case DISPENSER:
-                case CHEST:
-                case WORKBENCH:
-                case FURNACE:
-                case BURNING_FURNACE:
-                case STONE_PLATE:
-                case WOOD_PLATE:
-                case REDSTONE:
-                case REDSTONE_WIRE:
-                case REDSTONE_TORCH_ON:
-                case REDSTONE_TORCH_OFF:
-                case WOODEN_DOOR:
-                case IRON_DOOR:
-                case IRON_DOOR_BLOCK:
-                    return false;
-                default:
-                    return true;
+
+            // first check if we're using the whitelist
+            if (SecretDoors.whitelist != null) {
+                return SecretDoors.whitelist.contains(block.getType());
             }
+
+            // now check for the blacklist
+            return !SecretDoors.blacklist.contains(block.getType());
+
+
+
+            // old default list - should probably still use this, most of these break everything ever if they aren't blacklisted
+//            switch (block.getType()) {
+//                case DISPENSER:
+//                case CHEST:
+//                case WORKBENCH:
+//                case FURNACE:
+//                case BURNING_FURNACE:
+//                case STONE_PLATE:
+//                case WOOD_PLATE:
+//                case REDSTONE:
+//                case REDSTONE_WIRE:
+//                case REDSTONE_TORCH_ON:
+//                case REDSTONE_TORCH_OFF:
+//                case WOODEN_DOOR:
+//                case IRON_DOOR:
+//                case IRON_DOOR_BLOCK:
+//                    return false;
+//                default:
+//                    return true;
+//            }
         }
 
         return false;

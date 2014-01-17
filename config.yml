@@ -1,5 +1,35 @@
+# blacklist:
+# List of blocks that cannot be used to create a SecretDoor or Secret Trapdoor
+# whitelist:
+# To use the whitelist change enable-whitelist to true
+# This setting is disabled by default - it overrides the blacklist and allows for ONLY these blocks to be used as SecretDoors
+# List of blocks that can be used as SecretDoors, iff enable-whitelist is true
+# Be sure to add the correct fields here - for instance, add SNOW_BLOCK, not SNOW
+# Materials reference: http://jd.bukkit.org/beta/apidocs/org/bukkit/Material.html
 use-permissions: true
 enable-redstone: true
 enable-trapdoors: true
 enable-timers: false
+enable-whitelist: false
 close-time-seconds: 5
+
+
+blacklist:
+  - DISPENSER
+  - CHEST
+  - WORKBENCH
+  - FURNACE
+  - BURNING_FURNACE
+  - STONE_PLATE
+  - WOOD_PLATE
+  - REDSTONE
+  - REDSTONE_WIRE
+  - REDSTONE_TORCH_ON
+  - REDSTONE_TORCH_OFF
+  - WOODEN_DOOR
+  - IRON_DOOR
+  - IRON_DOOR_BLOCK
+whitelist:
+  - STONE
+  - COBBLESTONE
+  - WOOD

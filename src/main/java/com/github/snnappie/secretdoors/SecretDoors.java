@@ -12,7 +12,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class SecretDoors extends JavaPlugin {
 	private HashMap<Block, SecretDoor> doors = new HashMap<>();
@@ -21,7 +23,11 @@ public class SecretDoors extends JavaPlugin {
     private HashMap<SecretDoor, CloseDoorTask> doorTasks = new HashMap<>();
     private HashMap<SecretTrapdoor, CloseTrapDoorTask> trapdoorTasks = new HashMap<>();
 
-    public int closeTime;
+    private int closeTime;
+    // should these be static?  Seems ugly
+    // blood tears everywhere
+    public static List<Material> blacklist;
+    public static List<Material> whitelist;
 
     // TODO: Still not sure if I'm happy about this re-refactoring
     /**
@@ -36,8 +42,9 @@ public class SecretDoors extends JavaPlugin {
     public static final String CONFIG_ENABLE_TIMERS         = "enable-timers";
     public static final String CONFIG_ENABLE_REDSTONE       = "enable-redstone";
     public static final String CONFIG_ENABLE_TRAPDOORS      = "enable-trapdoors";
-
+    public static final String CONFIG_ENABLE_WHITELIST      = "enable-whitelist";
     public static final String CONFIG_CLOSE_TIME            = "close-time-seconds";
+
 
 	public void onDisable() {
 		for (Block door : this.doors.keySet()) {
@@ -59,8 +66,32 @@ public class SecretDoors extends JavaPlugin {
         // config
         getConfig().options().copyDefaults(true);
 		saveConfig();
-        this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME) < 0 ? 0 : getConfig().getInt(CONFIG_CLOSE_TIME);
+        loadConfig();
 	}
+
+    /**
+     * Load the fields we need into memory
+     */
+    private void loadConfig() {
+
+        this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME) < 0 ? 0 : getConfig().getInt(CONFIG_CLOSE_TIME);
+
+        blacklist = new ArrayList<>();
+        for (String s : getConfig().getStringList("blacklist")) {
+            blacklist.add(Material.getMaterial(s));
+        }
+
+        // can just use if whitelist != null
+        // kind of ugly, but whatever
+        if (getConfig().getBoolean(CONFIG_ENABLE_WHITELIST)) {
+            whitelist = new ArrayList<>();
+            for (String s : getConfig().getStringList("whitelist")) {
+                whitelist.add(Material.getMaterial(s));
+            }
+        }
+
+
+    }
 
 	// handles commands
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -75,7 +106,8 @@ public class SecretDoors extends JavaPlugin {
 					}
 				}
 				reloadConfig();
-                this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME) < 0 ? 0 : getConfig().getInt(CONFIG_CLOSE_TIME);
+                loadConfig();
+
 				sender.sendMessage(ChatColor.RED + "Secret Doors config reloaded");
 				return true;
 			}

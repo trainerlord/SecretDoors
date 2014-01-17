@@ -110,6 +110,12 @@ public class PlayerListener implements Listener {
 		if (!plugin.getConfig().getBoolean(SecretDoors.CONFIG_ENABLE_TRAPDOORS)) {
 			return;
 		}
+
+        
+        if (plugin.getConfig().getBoolean(SecretDoors.CONFIG_PERMISSIONS_ENABLED))
+            if (!event.getPlayer().hasPermission(SecretDoors.PERMISSION_SD_USE))
+                return;
+
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			
 			SecretTrapdoor door = null;
