@@ -136,7 +136,7 @@ public class SecretDoor {
     public void autoClose() {
         close();
 
-        doorBlock.setData((byte) (doorBlock.getData() ^ 0x4));
+        doorBlock.setData((byte) (doorBlock.getData() & ~0x4));
         doorBlock.getWorld().playEffect(doorBlock.getLocation(), Effect.DOOR_TOGGLE, 0);
     }
 
