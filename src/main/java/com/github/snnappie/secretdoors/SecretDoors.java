@@ -88,6 +88,8 @@ public class SecretDoors extends JavaPlugin {
             for (String s : getConfig().getStringList("whitelist")) {
                 whitelist.add(Material.getMaterial(s));
             }
+        } else { // fix for my stupid hack to use the whitelist
+            whitelist = null;
         }
 
 
