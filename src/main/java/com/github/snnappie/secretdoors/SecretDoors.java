@@ -34,6 +34,7 @@ public class SecretDoors extends JavaPlugin {
      * Permission strings
      */
     public static final String PERMISSION_SD_USE    = "secretdoors.use";
+    public static final String PERMISSION_SD_CREATE = "secretdoors.create";
 
     /**
      * Config strings
@@ -74,7 +75,8 @@ public class SecretDoors extends JavaPlugin {
      */
     private void loadConfig() {
 
-        this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME) < 0 ? 0 : getConfig().getInt(CONFIG_CLOSE_TIME);
+        this.closeTime = getConfig().getInt(CONFIG_CLOSE_TIME);
+        if (this.closeTime < 0) this.closeTime = 0;
 
         blacklist = new ArrayList<>();
         for (String s : getConfig().getStringList("blacklist")) {

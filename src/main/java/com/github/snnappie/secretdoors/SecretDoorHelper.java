@@ -14,6 +14,10 @@ import org.bukkit.material.*;
 public class SecretDoorHelper {
 
 
+    // no instantiating singleton objects
+    private SecretDoorHelper() {}
+
+
     public static boolean isTopHalf(Block door) {
         if (door.getType() != Material.WOODEN_DOOR)
             throw new IllegalArgumentException("Incorrect Block type, expected WOODEN_DOOR but got " + door.getType());
@@ -36,7 +40,6 @@ public class SecretDoorHelper {
 
     /**
      * Blacklist of invalid blocks
-     * TODO adapt for a configurable list
      */
     public static boolean isValidBlock(Block block) {
 
@@ -53,29 +56,6 @@ public class SecretDoorHelper {
 
             // now check for the blacklist
             return !SecretDoors.blacklist.contains(block.getType());
-
-
-
-            // old default list - should probably still use this, most of these break everything ever if they aren't blacklisted
-//            switch (block.getType()) {
-//                case DISPENSER:
-//                case CHEST:
-//                case WORKBENCH:
-//                case FURNACE:
-//                case BURNING_FURNACE:
-//                case STONE_PLATE:
-//                case WOOD_PLATE:
-//                case REDSTONE:
-//                case REDSTONE_WIRE:
-//                case REDSTONE_TORCH_ON:
-//                case REDSTONE_TORCH_OFF:
-//                case WOODEN_DOOR:
-//                case IRON_DOOR:
-//                case IRON_DOOR_BLOCK:
-//                    return false;
-//                default:
-//                    return true;
-//            }
         }
 
         return false;
@@ -132,14 +112,6 @@ public class SecretDoorHelper {
      * Returns the direction the door is facing while closed
      */
     public static BlockFace getDoorFace(Block door) {
-
-//        door = getKeyFromBlock(door);
-//        byte data = door.getData();
-//        if ((data & 0x3) == 0x3) return BlockFace.SOUTH;
-//        if ((data & 0x1) == 0x1) return BlockFace.NORTH;
-//        if ((data & 0x2) == 0x2) return BlockFace.EAST;
-//        return BlockFace.WEST;
-
         return ((Directional) getKeyFromBlock(door).getState().getData()).getFacing();
     }
 

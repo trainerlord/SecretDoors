@@ -1,6 +1,6 @@
 name: SecretDoors
 main: com.github.snnappie.secretdoors.SecretDoors
-version: 1.3.2
+version: 1.4.0
 author: Snnappie
 description: Secret doors the way you know them from the movies!
 
@@ -10,11 +10,15 @@ permissions:
     children:
       secretdoors.use: true
       secretdoors.reload: true
+      secretdoors.create: true
     secretdoors.use:
       description: Allows players to open and close Secret Doors
       default: op
     secretdoors.reload:
       description: Allows players to use /secretdoors reload and /sd reload
+      default: op
+    secretdoors.create:
+      description: Allows creation of a SecretDoor.
       default: op
 commands:
   secretdoors:
