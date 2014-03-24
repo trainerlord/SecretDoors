@@ -104,8 +104,7 @@ public class PlayerListener implements Listener {
     }
 
 
-    // TODO: revisit this for clean-up
-	@EventHandler(ignoreCancelled=true)
+	@EventHandler
 	public void onTrapdoorClick(PlayerInteractEvent event) {
 		if (!plugin.getConfig().getBoolean(SecretDoors.CONFIG_ENABLE_TRAPDOORS)) {
 			return;
@@ -117,32 +116,24 @@ public class PlayerListener implements Listener {
                 return;
 
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			
-			SecretTrapdoor door = null;
-			Block clicked = event.getClickedBlock();
-			Block other;
-			
-			if (clicked.getType() == Material.LADDER) {
-				if (plugin.isSecretTrapdoor(clicked))
-					plugin.closeTrapdoor(clicked);
-				return;
-			}
-			// opened from below
-			if (clicked.getType() == Material.TRAP_DOOR && clicked.getRelative(BlockFace.UP).getType() != Material.AIR) {
-				other = clicked.getRelative(BlockFace.UP);
-				door = new SecretTrapdoor(clicked, other);
-			} else if (clicked.getRelative(BlockFace.DOWN).getType() == Material.TRAP_DOOR) { // opened from above
-				other = clicked.getRelative(BlockFace.DOWN);
-				door = new SecretTrapdoor(other, clicked);
-				other.getWorld().playEffect(other.getLocation(), Effect.DOOR_TOGGLE, 0);
-			}
-			
-			if (door != null) {
-				event.setCancelled(true);
-				door.open();
-				plugin.addTrapdoor(door);
-			}
-			
+
+            Block clicked = event.getClickedBlock();
+            SecretTrapdoor door = null;
+
+            if (SecretDoorHelper.canBeSecretTrapdoor(clicked))
+                door = new SecretTrapdoor(clicked, clicked.getRelative(BlockFace.UP), false);
+            else if (SecretDoorHelper.canBeSecretTrapdoor(clicked.getRelative(BlockFace.DOWN)))
+                door = new SecretTrapdoor(clicked.getRelative(BlockFace.DOWN), clicked, true);
+            else if (plugin.isSecretTrapdoor(clicked))
+                plugin.closeTrapdoor(clicked);
+
+
+            if (door != null) {
+                event.setCancelled(true);
+                door.open();
+                plugin.addTrapdoor(door);
+            }
+
 		}
 	}
 	

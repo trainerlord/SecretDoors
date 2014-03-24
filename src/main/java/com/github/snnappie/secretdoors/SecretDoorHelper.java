@@ -109,6 +109,19 @@ public class SecretDoorHelper {
     }
 
     /**
+     * Checks if a Trapdoor can be a Secret Trapdoor
+     * Currently only allowed if the trapdoor is placed on the upper half of the block.
+     */
+    public static boolean canBeSecretTrapdoor(Block door) {
+        Block relative = door.getRelative(BlockFace.UP);
+        // limit it to being the upper side of the block
+        return door.getType() == Material.TRAP_DOOR
+                && ((door.getData() & 0x8) == 0x8)
+                && relative.getType() != Material.AIR
+                && isValidBlock(relative);
+    }
+
+    /**
      * Returns the direction the door is facing while closed
      */
     public static BlockFace getDoorFace(Block door) {

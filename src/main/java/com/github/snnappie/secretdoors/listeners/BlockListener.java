@@ -14,15 +14,18 @@ import com.github.snnappie.secretdoors.SecretDoors;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 public class BlockListener implements Listener {
+
+
+    private static final String TRAPDOOR_MSG   = ChatColor.RED + "You do not have permission to create Secret Trapdoors!";
+    private static final String SECRETDOOR_MSG = ChatColor.RED + "You do not have permission to create SecretDoors!";
+
 	private SecretDoors plugin;
 
 	public BlockListener(SecretDoors plugin) {
 		this.plugin = plugin;
 	}
 
-    /**
-     * Close the door/trapdoor if a user breaks the door block.
-     */
+    /** Close the door/trapdoor if a user breaks the door block. */
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent bbe) {
 		Block block = bbe.getBlock();
@@ -48,30 +51,43 @@ public class BlockListener implements Listener {
 		}
 	}
 
+    /** Primary for handling permissions on creating SecretDoors and Secret Trapdoors. */
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
 
         Player player = event.getPlayer();
         // don't bother with other checks if they have permissions
-        if (player.hasPermission(SecretDoors.PERMISSION_SD_CREATE))
+        if (!plugin.getConfig().getBoolean(SecretDoors.CONFIG_PERMISSIONS_ENABLED) || player.hasPermission(SecretDoors.PERMISSION_SD_CREATE))
             return;
 
         Block block = event.getBlock();
-        if (block.getType() == Material.WOODEN_DOOR) {
-            if (SecretDoorHelper.canBeSecretDoor(block)) {
-                player.sendMessage(ChatColor.RED + "You do not have permission to create SecretDoors!");
+        // check if they placed a door that could be a secret door
+        if (SecretDoorHelper.canBeSecretDoor(block)) {
+            player.sendMessage(SECRETDOOR_MSG);
+            player.updateInventory();
+            event.setCancelled(true);
+        } else if (SecretDoorHelper.canBeSecretTrapdoor(block)) {
+            // handle when a trapdoor is placed that could be a secret trap door
+            player.sendMessage(TRAPDOOR_MSG);
+            player.updateInventory();
+            event.setCancelled(true);
+        } else {
+            // handle placement of a block near a door or trapdoor
+            BlockFace[] directions = { BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST };
+            // check trapdoor first
+            if (SecretDoorHelper.canBeSecretTrapdoor(block.getRelative(BlockFace.DOWN))) {
+                player.sendMessage(TRAPDOOR_MSG);
                 player.updateInventory();
                 event.setCancelled(true);
-            }
-        } else {
-            BlockFace[] directions = { BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST };
-            for (BlockFace f : directions) {
-                Block relative = block.getRelative(f);
-                if (SecretDoorHelper.canBeSecretDoor(relative)) {
-                    player.sendMessage(ChatColor.RED + "You do not have permission to create SecretDoors!");
-                    player.updateInventory();
-                    event.setCancelled(true);
-                    break;
+            } else {
+                for (BlockFace f : directions) {
+                    Block relative = block.getRelative(f);
+                    if (SecretDoorHelper.canBeSecretDoor(relative)) {
+                        player.sendMessage(SECRETDOOR_MSG);
+                        player.updateInventory();
+                        event.setCancelled(true);
+                        break;
+                    }
                 }
             }
         }

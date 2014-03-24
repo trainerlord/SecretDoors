@@ -15,10 +15,12 @@ public class SecretTrapdoor {
 	private Block above;
 	private Material mat;
 	private byte aboveData;
+    private boolean fromAbove;
 
-	public SecretTrapdoor(Block doorBlock, Block above) {
+	public SecretTrapdoor(Block doorBlock, Block above, boolean fromAbove) {
 		if (doorBlock.getType() == Material.TRAP_DOOR) {
 			this.doorBlock = doorBlock;
+            this.fromAbove = fromAbove;
 			direction = new TrapDoor(doorBlock.getType(), doorBlock.getData()).getAttachedFace().getOppositeFace();
 			this.above = above;
 
@@ -34,6 +36,9 @@ public class SecretTrapdoor {
 		doorBlock.setData(getDirectionData());
 
 		above.setType(Material.AIR);
+
+        if (fromAbove)
+            doorBlock.getWorld().playEffect(doorBlock.getLocation(), Effect.DOOR_TOGGLE, 0);
 	}
 
 	public void close() {
