@@ -1,6 +1,6 @@
 /*
  * SecretDoorHelper.java
- * Last modified: 2014 7 31
+ * Last modified: 2014 12 21
  *
  * In place of a legal notice,
  * here is the author's adaptation to the sqlite3 blessing:
@@ -22,28 +22,55 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.material.*;
 
 /**
+ * Set of static utility helpers for operating on SecretDoors.
  * @author Snnappie
- *         This class is essentially a set of static methods that are useful for SecretDoors.
- *         (I prefer it this way - I've been developing heavily in Scala and prefer the `companion object` concept to having static and non-static methods
- *         living in the same space)
  */
 public class SecretDoorHelper {
 
-
-    // no instantiating singleton objects
     private SecretDoorHelper() {}
 
+    /**
+     * The most commonly used BlockFace directions for door operations.
+     */
+    // Lack of trust for the JVM - make this static and allocate it once.  The JVM is probably smarter than me anyway,
+    // but I don't trust it.
+    public static BlockFace[] DIRECTIONS = { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
 
-    public static boolean isTopHalf(Block door) {
-        if (door.getType() != Material.WOODEN_DOOR)
-            throw new IllegalArgumentException("Incorrect Block type, expected WOODEN_DOOR but got " + door.getType());
-        return (door.getData() & 0x8) == 0x8;
+    /**
+     * @return true if the received Block is considered a valid door type.
+     */
+    public static boolean isValidDoor(Block door) {
+        if (door == null)
+            return false;
+        switch (door.getType()) {
+            case WOODEN_DOOR:
+            case ACACIA_DOOR:
+            case BIRCH_DOOR:
+            case DARK_OAK_DOOR:
+            case JUNGLE_DOOR:
+            case SPRUCE_DOOR:
+                return true;
+        }
+
+        return false;
     }
 
+
+    /**
+     * @return true if the received block is of type WOODEN_DOOR and is the top block of the door.
+     */
+    public static boolean isTopHalf(Block door) {
+        return (isValidDoor(door)) && (door.getData() & 0x8) == 0x8;
+    }
+
+    /**
+     * @return the bottom half of the door block if {@code isValidDoor(block)}.  Returns {@code null}
+     *         otherwise.
+     */
     public static Block getKeyFromBlock(Block block) {
         Block door = null;
 
-        if (block.getType() == Material.WOODEN_DOOR) {
+        if (isValidDoor(block)) {
             // return lower half only
             if (isTopHalf(block))
                 door = block.getRelative(BlockFace.DOWN);
@@ -54,31 +81,12 @@ public class SecretDoorHelper {
         return door;
     }
 
-    /**
-     * Blacklist of invalid blocks
-     */
-    public static boolean isValidBlock(Block block) {
-
-        if (block != null) {
-
-            if (isAttachableItem(block.getType())) {
-                return false;
-            }
-
-            // first check if we're using the whitelist
-            if (SecretDoors.whitelist != null) {
-                return SecretDoors.whitelist.contains(block.getType());
-            }
-
-            // now check for the blacklist
-            return !SecretDoors.blacklist.contains(block.getType());
-        }
-
-        return false;
-    }
 
     /**
-     * checks if the item can be attached to a block
+     * Returns true if item is considered a valid attachable item.  Note that valid attachable items is a subset
+     * of all attachable items.
+     * @param item Material type to be checked.
+     * @return true if item is a valid attachable item, false otherwise.
      */
     public static boolean isAttachableItem(Material item) {
 
@@ -88,7 +96,8 @@ public class SecretDoorHelper {
                 case SIGN:
                 case WALL_SIGN:
                 case LEVER:
-                case STONE_BUTTON: // NOTE: for whatever reason, Material enum doesn't include wooden buttons
+                case STONE_BUTTON:
+                case WOOD_BUTTON:
                 case LADDER:
                     return true;
                 default:
@@ -98,57 +107,48 @@ public class SecretDoorHelper {
         return false;
     }
 
+    /**
+     * Casts the received block to {@link org.bukkit.material.Attachable} if it is considered a valid attachable type.
+     * Note that valid attachable types are defined by {@link #isAttachableItem(org.bukkit.Material)}.
+     * If block is not a valid attachable type, then null is returned instead.
+     * @param block Block to be cast to Attachable
+     * @return block as an attachable, or null if it could not be cast.
+     */
     public static Attachable getAttachableFromBlock(Block block) {
-
         return isAttachableItem(block.getType()) ? (Attachable) block.getState().getData() : null;
     }
 
     /**
-     * Checks if door block can be a secret door
-     */
-    public static boolean canBeSecretDoor(Block door) {
-        if (door.getType() != Material.WOODEN_DOOR)
-            return false;
-        BlockFace face = getDoorFace(door);
-        door = getKeyFromBlock(door);
-
-        Block bottom = door.getRelative(face);
-        Block top    = bottom.getRelative(BlockFace.UP);
-        // This is done to avoid creating a door with AIR blocks after a door is opened.
-        // It's handled this way instead of adding Material.AIR to the black list so that doors can still be created
-        // when only one block is used.
-        if (bottom.getType() != Material.AIR || top.getType() != Material.AIR)
-            if (isValidBlock(bottom) && isValidBlock(top)) // AIR is considered `valid` in this case
-                return true;
-        return false;
-
-    }
-
-    /**
-     * Checks if a Trapdoor can be a Secret Trapdoor
-     * Currently only allowed if the trapdoor is placed on the upper half of the block.
-     */
-    public static boolean canBeSecretTrapdoor(Block door) {
-        Block relative = door.getRelative(BlockFace.UP);
-        // limit it to being the upper side of the block
-        return door.getType() == Material.TRAP_DOOR
-                && ((door.getData() & 0x8) == 0x8)
-                && relative.getType() != Material.AIR
-                && isValidBlock(relative);
-    }
-
-    /**
-     * Returns the direction the door is facing while closed
+     * Returns the {@link org.bukkit.block.BlockFace} that the door block will be facing while it is closed.
+     * If door is not of type WOODEN_DOOR (that is, {@code !isValidDoor(door)}, then {@code null}
+     * is returned instead.
+     * @param door door block to determine it's facing.
+     * @return Returns the direction the door is facing while closed or null if door is not a WOODEN_DOOR.
      */
     public static BlockFace getDoorFace(Block door) {
-        return ((Directional) getKeyFromBlock(door).getState().getData()).getFacing();
+        Block key = getKeyFromBlock(door);
+        // This abstraction is broken with the new doors - they are not linked to Door.class and thus cannot be
+        // down cast to Directional.
+        // Instead we will check the bits ourselves
+//        return key != null ? ((Directional) key.getState().getData()).getFacing() : null;
+        if (key == null)
+            return null;
+        byte data = (byte) (key.getData() & ~4);
+        switch (data) {
+            case 0: return BlockFace.WEST;
+            case 1: return BlockFace.NORTH;
+            case 2: return BlockFace.EAST;
+            case 3: return BlockFace.SOUTH;
+        }
+
+        return null;
     }
 
     /**
-     * Determines if the Block was clicked or the Door was clicked.
-     * TODO: review if this is even necessary - if so, consider re-naming.  `Direction` doesn't accurately describe it's use.
+     * Orientation represents the state of which side of the door was clicked.  That is, Orientation has
+     * two enumerated values, BLOCK_FIRST and DOOR_FIRST.
      */
-    public static enum Direction {
+    public static enum Orientation {
         BLOCK_FIRST, DOOR_FIRST
     }
 }
