@@ -122,7 +122,9 @@ public class SecretDoors extends JavaPlugin {
         if (getConfig().getBoolean(CONFIG_ENABLE_TIMERS))
             doorTasks = new HashMap<>();
         else {
-            doorTasks.entrySet().forEach((e) -> e.getValue().cancel());
+            // For updated config, if we had timers enabled before, cancel all running timers and null them out.
+            if (doorTasks != null)
+                doorTasks.entrySet().forEach((e) -> e.getValue().cancel());
             doorTasks = null;
         }
     }
