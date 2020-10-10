@@ -14,12 +14,13 @@
  * 	and with all your mind.
  */
 
-package com.github.snnappie.secretdoors.listeners;
+package com.development.trainerlord.secretdoors.listeners;
 
-import com.github.snnappie.secretdoors.SecretDoor;
-import com.github.snnappie.secretdoors.SecretDoorHelper;
-import com.github.snnappie.secretdoors.SecretDoors;
+import com.development.trainerlord.secretdoors.SecretDoor;
+import com.development.trainerlord.secretdoors.SecretDoorHelper;
+import com.development.trainerlord.secretdoors.SecretDoors;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
@@ -70,7 +71,7 @@ public class PowerListener implements Listener {
     // return Returns true if the door is opened.
     // Assumes that door has material type is a valid door
     private boolean isOpened(Block door) {
-        return (SecretDoorHelper.getKeyFromBlock(door).getData() & 0x4) == 0x4;
+        return ((Door)SecretDoorHelper.getKeyFromBlock(door).getBlockData()).isOpen();
     }
 
 }

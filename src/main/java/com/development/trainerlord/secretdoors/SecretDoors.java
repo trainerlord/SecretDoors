@@ -14,11 +14,11 @@
  * 	and with all your mind.
  */
 
-package com.github.snnappie.secretdoors;
+package com.development.trainerlord.secretdoors;
 
-import com.github.snnappie.secretdoors.listeners.BlockListener;
-import com.github.snnappie.secretdoors.listeners.PlayerListener;
-import com.github.snnappie.secretdoors.listeners.PowerListener;
+import com.development.trainerlord.secretdoors.listeners.BlockListener;
+import com.development.trainerlord.secretdoors.listeners.PlayerListener;
+import com.development.trainerlord.secretdoors.listeners.PowerListener;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
@@ -54,7 +54,7 @@ public class SecretDoors extends JavaPlugin {
     public static final String CONFIG_CLOSE_TIME            = "close-time-seconds";
 
     // Used for enabling debug println's throughout the code - should always be false in a release.
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
 
 
     // Represents the collection of materials that *cannot* be used to create SecretOpenable
@@ -183,7 +183,7 @@ public class SecretDoors extends JavaPlugin {
     /**
      * Returns true if the received block's Material type is considered to be valid.
      * A Material type, m, is considered valid if:
-     *  - m is not an "attachable" (see {@link com.github.snnappie.secretdoors.SecretDoorHelper#isAttachableItem}
+     *  - m is not an "attachable" (see
      *  - whitelist is enabled for this instance and m is an element of the whitelist
      *  - whitelist is not enabled and m is not an element of the blacklist
      * @param block Block to be checked for validity
@@ -209,7 +209,7 @@ public class SecretDoors extends JavaPlugin {
     }
 
     /**
-     * Determines if the received {@code door} can be used to create a {@link com.github.snnappie.secretdoors.SecretDoor SecretDoor}
+     * Determines if the received {@code door} can be used to create
      * object.  More concretely, this method will return true iff:<br />
      * - door has Material type WOODEN_DOOR
      * - the two blocks directly in front of the door are considered valid blocks
@@ -237,7 +237,7 @@ public class SecretDoors extends JavaPlugin {
     }
 
     /**
-     * Returns true iff door can be used to create a {@link com.github.snnappie.secretdoors.SecretTrapdoor SecretTrapdoor}.
+     * Returns true iff door can be used to create a .
      * More concretely, canBeSecretTrapdoor returns true iff:<br />
      * - door has Material type TRAP_DOOR
      * - door is attached on the upper half of a block
@@ -246,10 +246,19 @@ public class SecretDoors extends JavaPlugin {
     public boolean canBeSecretTrapdoor(Block door) {
         Block relative = door.getRelative(BlockFace.UP);
         // limit it to being the upper side of the block
-        return door.getType() == Material.TRAP_DOOR
-                && ((door.getData() & 0x8) == 0x8)
-                && relative.getType() != Material.AIR
-                && isValidBlock(relative);
+        switch (door.getType()) {
+            case OAK_TRAPDOOR:
+            case BIRCH_TRAPDOOR:
+            case JUNGLE_TRAPDOOR:
+            case SPRUCE_TRAPDOOR:
+            case ACACIA_TRAPDOOR:
+            case DARK_OAK_TRAPDOOR:
+                return ((door.getData() & 0x8) == 0x8)
+                        && relative.getType() != Material.AIR
+                        && isValidBlock(relative);
+        }
+        return false;
+
     }
 
     /**
@@ -287,7 +296,7 @@ public class SecretDoors extends JavaPlugin {
             // NOTE: bit of an awkward hack, really.  This is relying on likely unspecified behavior of doors and
             // trapdoors using the same bits to represented openness.  Should abstract this into the
             // SecretOpenable interface.
-            key.setData((byte) (key.getData() & ~0x4));
+            key.setBlockData(key.getBlockData());//setData((byte) (key.getData() & ~0x4));
             key.getWorld().playEffect(key.getLocation(), Effect.DOOR_TOGGLE, 0);
             doorTasks.remove(key);
         }

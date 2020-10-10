@@ -14,12 +14,13 @@
  * 	and with all your mind.
  */
 
-package com.github.snnappie.secretdoors;
+package com.development.trainerlord.secretdoors;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.material.*;
+import org.bukkit.block.data.*;
+import org.bukkit.block.data.type.Door;
 
 /**
  * Set of static utility helpers for operating on SecretDoors.
@@ -43,12 +44,14 @@ public class SecretDoorHelper {
         if (door == null)
             return false;
         switch (door.getType()) {
-            case WOODEN_DOOR:
+            case OAK_DOOR:
             case ACACIA_DOOR:
             case BIRCH_DOOR:
             case DARK_OAK_DOOR:
             case JUNGLE_DOOR:
             case SPRUCE_DOOR:
+            case CRIMSON_DOOR:
+            case WARPED_DOOR:
                 return true;
         }
 
@@ -60,7 +63,7 @@ public class SecretDoorHelper {
      * @return true if the received block is of type WOODEN_DOOR and is the top block of the door.
      */
     public static boolean isTopHalf(Block door) {
-        return (isValidDoor(door)) && (door.getData() & 0x8) == 0x8;
+        return (isValidDoor(door)) && ((Door)door.getBlockData()).getHalf() == Bisected.Half.TOP;
     }
 
     /**
@@ -93,11 +96,30 @@ public class SecretDoorHelper {
         if (item != null) {
             switch (item) {
                 case TORCH:
-                case SIGN:
-                case WALL_SIGN:
+                case OAK_SIGN:
+                case ACACIA_SIGN:
+                case BIRCH_SIGN:
+                case DARK_OAK_SIGN:
+                case JUNGLE_SIGN:
+                case SPRUCE_SIGN:
+                case CRIMSON_SIGN:
+                case WARPED_SIGN:
+                case OAK_WALL_SIGN:
+                case ACACIA_WALL_SIGN:
+                case BIRCH_WALL_SIGN:
+                case DARK_OAK_WALL_SIGN:
+                case JUNGLE_WALL_SIGN:
+                case SPRUCE_WALL_SIGN:
+                case CRIMSON_WALL_SIGN:
+                case WARPED_WALL_SIGN:
                 case LEVER:
                 case STONE_BUTTON:
-                case WOOD_BUTTON:
+                case OAK_BUTTON:
+                case ACACIA_BUTTON:
+                case BIRCH_BUTTON:
+                case DARK_OAK_BUTTON:
+                case JUNGLE_BUTTON:
+                case SPRUCE_BUTTON:
                 case LADDER:
                     return true;
                 default:
@@ -114,8 +136,8 @@ public class SecretDoorHelper {
      * @param block Block to be cast to Attachable
      * @return block as an attachable, or null if it could not be cast.
      */
-    public static Attachable getAttachableFromBlock(Block block) {
-        return isAttachableItem(block.getType()) ? (Attachable) block.getState().getData() : null;
+    public static Directional getAttachableFromBlock(Block block) {
+        return isAttachableItem(block.getType()) ? (Directional) block.getBlockData() : null;
     }
 
     /**
@@ -133,12 +155,12 @@ public class SecretDoorHelper {
 //        return key != null ? ((Directional) key.getState().getData()).getFacing() : null;
         if (key == null)
             return null;
-        byte data = (byte) (key.getData() & ~4);
+        BlockFace data = ((Directional) key.getBlockData()).getFacing();
         switch (data) {
-            case 0: return BlockFace.WEST;
-            case 1: return BlockFace.NORTH;
-            case 2: return BlockFace.EAST;
-            case 3: return BlockFace.SOUTH;
+            case EAST: return BlockFace.WEST;
+            case SOUTH: return BlockFace.NORTH;
+            case WEST: return BlockFace.EAST;
+            case NORTH: return BlockFace.SOUTH;
         }
 
         return null;
@@ -150,5 +172,21 @@ public class SecretDoorHelper {
      */
     public static enum Orientation {
         BLOCK_FIRST, DOOR_FIRST
+    }
+
+
+    public static BlockFace getAttachableface(Directional block) {
+        switch (block.getFacing()) {
+            case NORTH:
+                return BlockFace.SOUTH;
+            case SOUTH:
+                return BlockFace.NORTH;
+            case EAST:
+                return BlockFace.WEST;
+            case WEST:
+                return BlockFace.EAST;
+            default:
+                return null;
+        }
     }
 }

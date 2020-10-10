@@ -14,35 +14,43 @@
  * 	and with all your mind.
  */
 
-package com.github.snnappie.secretdoors;
+package com.development.trainerlord.secretdoors;
 
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.material.TrapDoor;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 
 public class SecretTrapdoor implements SecretOpenable {
 
     private Block doorBlock;
-    private byte doorData;
+    private BlockData doorData;
     private BlockFace direction;
 
     private Block above;
     private Material mat;
-    private byte aboveData;
+    private BlockData aboveData;
     private boolean fromAbove;
 
     public SecretTrapdoor(Block doorBlock, Block above, boolean fromAbove) {
-        if (doorBlock.getType() == Material.TRAP_DOOR) {
-            this.doorBlock = doorBlock;
-            this.fromAbove = fromAbove;
-            direction = new TrapDoor(doorBlock.getType(), doorBlock.getData()).getAttachedFace().getOppositeFace();
-            this.above = above;
 
-            mat = this.above.getType();
-            aboveData = this.above.getData();
-            doorData = this.doorBlock.getData();
+        switch (doorBlock.getType()) {
+            case OAK_TRAPDOOR:
+            case ACACIA_TRAPDOOR:
+            case BIRCH_TRAPDOOR:
+            case DARK_OAK_TRAPDOOR:
+            case JUNGLE_TRAPDOOR:
+            case SPRUCE_TRAPDOOR:
+                this.doorBlock = doorBlock;
+                this.fromAbove = fromAbove;
+                direction = ((Directional) doorBlock.getBlockData()).getFacing().getOppositeFace();//new TrapDoor(doorBlock.getType(), doorBlock.getData()).getAttachedFace().getOppositeFace();
+                this.above = above;
+
+                mat = this.above.getType();
+                aboveData = this.above.getBlockData();
+                doorData = this.doorBlock.getBlockData();
         }
 
     }
@@ -50,7 +58,7 @@ public class SecretTrapdoor implements SecretOpenable {
     @Override
     public void open() {
         doorBlock.setType(Material.LADDER);
-        doorBlock.setData(getDirectionData());
+        doorBlock.setBlockData(getKey().getBlockData());//setData(getDirectionData());
 
         above.setType(Material.AIR);
 
@@ -60,11 +68,11 @@ public class SecretTrapdoor implements SecretOpenable {
 
     @Override
     public void close() {
-        doorBlock.setType(Material.TRAP_DOOR);
-        doorBlock.setData(doorData);
+        doorBlock.setType(Material.OAK_TRAPDOOR);//TODO Remember Type
+        doorBlock.setBlockData(doorData);
 
         above.setType(mat);
-        above.setData(aboveData);
+        above.setBlockData(aboveData);
         doorBlock.getWorld().playEffect(doorBlock.getLocation(), Effect.DOOR_TOGGLE, 0);
     }
 

@@ -14,7 +14,7 @@
  * 	and with all your mind.
  */
 
-package com.github.snnappie.secretdoors;
+package com.development.trainerlord.secretdoors;
 
 
 import org.bukkit.block.Block;

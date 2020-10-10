@@ -14,21 +14,20 @@
  * 	and with all your mind.
  */
 
-package com.github.snnappie.secretdoors.listeners;
+package com.development.trainerlord.secretdoors.listeners;
 
-import com.github.snnappie.secretdoors.SecretDoor;
-import com.github.snnappie.secretdoors.SecretDoorHelper;
-import com.github.snnappie.secretdoors.SecretDoors;
-import com.github.snnappie.secretdoors.SecretTrapdoor;
-import org.bukkit.Material;
+import com.development.trainerlord.secretdoors.SecretDoor;
+import com.development.trainerlord.secretdoors.SecretDoorHelper;
+import com.development.trainerlord.secretdoors.SecretDoors;
+import com.development.trainerlord.secretdoors.SecretTrapdoor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Attachable;
 
 /**
  * PlayerListener defines EventHandler methods for player interactions with SecretDoors and SecretTrapdoors.
@@ -97,8 +96,8 @@ public class PlayerListener implements Listener {
             // handle `attached blocks` (signs, torches, etc)
             if (SecretDoorHelper.isAttachableItem(clicked.getType())) {
 
-                Attachable item = SecretDoorHelper.getAttachableFromBlock(clicked);
-                BlockFace face  = item.getAttachedFace();
+                Directional item = SecretDoorHelper.getAttachableFromBlock(clicked);
+                BlockFace face  = SecretDoorHelper.getAttachableface(item);//item.getAttachedFace();
                 Block block     = clicked.getRelative(face);
                 Block door      = clicked.getRelative(face, 2);
 
