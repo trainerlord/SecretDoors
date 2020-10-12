@@ -19,8 +19,11 @@ package com.development.trainerlord.secretdoors.listeners;
 import com.development.trainerlord.secretdoors.SecretDoor;
 import com.development.trainerlord.secretdoors.SecretDoorHelper;
 import com.development.trainerlord.secretdoors.SecretDoors;
+import com.development.trainerlord.secretdoors.SecretTrapdoor;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
@@ -47,7 +50,7 @@ public class PowerListener implements Listener {
 
             if (SecretDoors.DEBUG) {
                 System.out.println("Redstone handler called:\n" +
-                        "\tisOpened == " + isOpened(door) +
+                        "\tisOpened == " + isOpenedDoor(door) +
                         "\n\tisPowered == " + door.isBlockPowered()
                 );
             }
@@ -55,14 +58,36 @@ public class PowerListener implements Listener {
             Block key = SecretDoorHelper.getKeyFromBlock(door);
 
             // open the door
-            if (!isOpened(door) && plugin.canBeSecretDoor(door) && !plugin.isSecretDoor(key)) {
+            if (!isOpenedDoor(door) && plugin.canBeSecretDoor(door) && !plugin.isSecretDoor(key)) {
                 plugin.addDoor(new SecretDoor(door, door.getRelative(SecretDoorHelper.getDoorFace(door)),
                                SecretDoorHelper.Orientation.DOOR_FIRST
                 )).open();
             }
 
             // close the door
-            else if (isOpened(door) && plugin.isSecretDoor(key)) {
+            else if (isOpenedDoor(door) && plugin.isSecretDoor(key)) {
+                plugin.closeDoor(key);
+            }
+        } else if (SecretDoorHelper.isValidTrapDoor(door) &&
+                plugin.getConfig().getBoolean(SecretDoors.CONFIG_ENABLE_REDSTONE)) {
+
+//////////////////////////////////////////////////////////////////////
+            if (SecretDoors.DEBUG) {
+                System.out.println("Redstone handler called:\n" +
+                        "\tisOpened == " + isOpenedTrapDoor(door) +
+                        "\n\tisPowered == " + door.isBlockPowered()
+                );
+            }
+
+            Block key = SecretDoorHelper.getKeyFromBlock(door);
+
+            // open the door
+            if (!isOpenedTrapDoor(door) && plugin.canBeSecretTrapdoor(door) && !plugin.isSecretDoor(key)) {
+                plugin.addDoor(new SecretTrapdoor(door, door.getRelative(BlockFace.UP),true)).open();
+            }
+
+            // close the door
+            else if (isOpenedTrapDoor(door) && plugin.isSecretDoor(key)) {
                 plugin.closeDoor(key);
             }
         }
@@ -70,8 +95,12 @@ public class PowerListener implements Listener {
 
     // return Returns true if the door is opened.
     // Assumes that door has material type is a valid door
-    private boolean isOpened(Block door) {
+    private boolean isOpenedDoor(Block door) {
         return ((Door)SecretDoorHelper.getKeyFromBlock(door).getBlockData()).isOpen();
+    }
+
+    private boolean isOpenedTrapDoor(Block door) {
+        return ((TrapDoor)SecretDoorHelper.getKeyFromTrapDoorBlock(door).getBlockData()).isOpen();
     }
 
 }

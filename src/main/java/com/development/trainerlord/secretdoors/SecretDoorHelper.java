@@ -58,6 +58,24 @@ public class SecretDoorHelper {
         return false;
     }
 
+    public static boolean isValidTrapDoor(Block door) {
+        if (door == null)
+            return false;
+        switch (door.getType()) {
+            case OAK_TRAPDOOR:
+            case ACACIA_TRAPDOOR:
+            case BIRCH_TRAPDOOR:
+            case DARK_OAK_TRAPDOOR:
+            case JUNGLE_TRAPDOOR:
+            case SPRUCE_TRAPDOOR:
+            case CRIMSON_TRAPDOOR:
+            case WARPED_TRAPDOOR:
+                return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * @return true if the received block is of type WOODEN_DOOR and is the top block of the door.
@@ -80,6 +98,14 @@ public class SecretDoorHelper {
             else {
                 door = block;
             }
+        }
+        return door;
+    }
+    public static Block getKeyFromTrapDoorBlock(Block block) {
+        Block door = null;
+
+        if (isValidTrapDoor(block)) {
+            door = block;
         }
         return door;
     }

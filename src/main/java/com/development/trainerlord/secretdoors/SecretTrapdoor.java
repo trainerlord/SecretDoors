@@ -20,8 +20,11 @@ import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.TrapDoor;
 
 public class SecretTrapdoor implements SecretOpenable {
 
@@ -31,11 +34,11 @@ public class SecretTrapdoor implements SecretOpenable {
 
     private Block above;
     private Material mat;
+    private Material doorMat;
     private BlockData aboveData;
     private boolean fromAbove;
 
     public SecretTrapdoor(Block doorBlock, Block above, boolean fromAbove) {
-
         switch (doorBlock.getType()) {
             case OAK_TRAPDOOR:
             case ACACIA_TRAPDOOR:
@@ -43,6 +46,8 @@ public class SecretTrapdoor implements SecretOpenable {
             case DARK_OAK_TRAPDOOR:
             case JUNGLE_TRAPDOOR:
             case SPRUCE_TRAPDOOR:
+            case CRIMSON_TRAPDOOR:
+            case WARPED_TRAPDOOR:
                 this.doorBlock = doorBlock;
                 this.fromAbove = fromAbove;
                 direction = ((Directional) doorBlock.getBlockData()).getFacing().getOppositeFace();//new TrapDoor(doorBlock.getType(), doorBlock.getData()).getAttachedFace().getOppositeFace();
@@ -57,37 +62,28 @@ public class SecretTrapdoor implements SecretOpenable {
 
     @Override
     public void open() {
-        doorBlock.setType(Material.LADDER);
-        doorBlock.setBlockData(getKey().getBlockData());//setData(getDirectionData());
+        //doorBlock.setBlockData(getKey().getBlockData());//setData(getDirectionData());
 
         above.setType(Material.AIR);
 
+        BlockState doorState = this.doorBlock.getState();
+        TrapDoor doorData = (TrapDoor) doorState.getBlockData();
+        doorData.setOpen(true);
+        doorState.setBlockData(doorData);
+        doorState.update();
         if (fromAbove)
             doorBlock.getWorld().playEffect(doorBlock.getLocation(), Effect.DOOR_TOGGLE, 0);
     }
 
     @Override
     public void close() {
-        doorBlock.setType(Material.OAK_TRAPDOOR);//TODO Remember Type
-        doorBlock.setBlockData(doorData);
-
+        //((TrapDoor) doorBlock.getBlockData()).setOpen(false);
         above.setType(mat);
-        above.setBlockData(aboveData);
         doorBlock.getWorld().playEffect(doorBlock.getLocation(), Effect.DOOR_TOGGLE, 0);
     }
 
     @Override
     public Block getKey() {
         return doorBlock.getType() == Material.LADDER ? doorBlock : null;
-    }
-
-    private byte getDirectionData() {
-        switch (direction) {
-            case NORTH: return 0x2;
-            case SOUTH: return 0x3;
-            case WEST: return 0x4;
-            case EAST: return 0x5;
-            default: return 0;
-        }
     }
 }

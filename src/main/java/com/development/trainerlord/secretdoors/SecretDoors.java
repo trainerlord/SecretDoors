@@ -24,6 +24,8 @@ import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -220,7 +222,7 @@ public class SecretDoors extends JavaPlugin {
             return false;
         door = SecretDoorHelper.getKeyFromBlock(door);
         // If the door is already opened, return false.
-        if ((door.getData() & 0x4) != 0x0)
+        if (((Door) door.getBlockData()).isOpen())
             return false;
         BlockFace face = SecretDoorHelper.getDoorFace(door);
 
@@ -244,19 +246,19 @@ public class SecretDoors extends JavaPlugin {
      * - the block directly above door is considered a valid block
      */
     public boolean canBeSecretTrapdoor(Block door) {
-        Block relative = door.getRelative(BlockFace.UP);
-        // limit it to being the upper side of the block
-        switch (door.getType()) {
-            case OAK_TRAPDOOR:
-            case BIRCH_TRAPDOOR:
-            case JUNGLE_TRAPDOOR:
-            case SPRUCE_TRAPDOOR:
-            case ACACIA_TRAPDOOR:
-            case DARK_OAK_TRAPDOOR:
-                return ((door.getData() & 0x8) == 0x8)
-                        && relative.getType() != Material.AIR
-                        && isValidBlock(relative);
-        }
+        if (!SecretDoorHelper.isValidTrapDoor(door))
+            return false;
+        // If the door is already opened, return false.
+        if (((TrapDoor)door.getBlockData()).isOpen())
+            return false;
+
+        Block above = door.getRelative(BlockFace.UP);
+        // This is done to avoid creating a door with AIR blocks after a door is opened.
+        // It's handled this way instead of adding Material.AIR to the black list so that doors can still be created
+        // when only one block is used.
+        if (above.getType() != Material.AIR)
+            if (isValidBlock(above)) // AIR is considered `valid` in this case
+                return true;
         return false;
 
     }

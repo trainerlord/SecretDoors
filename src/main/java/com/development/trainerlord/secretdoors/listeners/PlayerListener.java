@@ -134,8 +134,6 @@ public class PlayerListener implements Listener {
         if (!plugin.getConfig().getBoolean(SecretDoors.CONFIG_ENABLE_TRAPDOORS)) {
             return;
         }
-
-        
         if (plugin.getConfig().getBoolean(SecretDoors.CONFIG_PERMISSIONS_ENABLED))
             if (!event.getPlayer().hasPermission(SecretDoors.PERMISSION_SD_USE))
                 return;
@@ -159,6 +157,34 @@ public class PlayerListener implements Listener {
                 plugin.addDoor(door);
             }
 
+        }
+    }
+    @EventHandler
+    public void onTrapDoorCloseClick(PlayerInteractEvent event) {
+
+        // handle permissions
+        if (plugin.getConfig().getBoolean(SecretDoors.CONFIG_PERMISSIONS_ENABLED)) {
+            if (!event.getPlayer().hasPermission(SecretDoors.PERMISSION_SD_USE)) {
+                return;
+            }
+        }
+
+        Block door = event.getClickedBlock();
+        // right click and is door
+        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && SecretDoorHelper.isValidTrapDoor(door)) {
+
+            // is a closed secret door
+            if (plugin.canBeSecretDoor(door)) {
+                //BlockFace doorFace = SecretDoorHelper.getDoorFace(door);
+
+                // get the blocks in-front of the door
+                Block other = door.getRelative(BlockFace.UP);
+                plugin.addDoor(new SecretTrapdoor(door, other, true)).open();
+            }
+            // is an opened secret door
+            else if (plugin.isSecretDoor(SecretDoorHelper.getKeyFromBlock(door))) {
+                plugin.closeDoor(SecretDoorHelper.getKeyFromBlock(door));
+            }
         }
     }
 
