@@ -163,7 +163,7 @@ public class SecretDoorHelper {
      * @return block as an attachable, or null if it could not be cast.
      */
     public static Directional getAttachableFromBlock(Block block) {
-        return isAttachableItem(block.getType()) ? (Directional) block.getBlockData() : null;
+        return isAttachableItem(block.getType()) ? ((Directional) block.getBlockData()) : null;
     }
 
     /**
